@@ -1,0 +1,14 @@
+[package]
+name = "sprite_compo_test"
+version = "0.1.0"
+authors = ["CensoredUsername <CensoredUsername@gmail.com>"]
+
+[dependencies]
+gfx = "0.*"
+glutin = "0.*"
+gfx_window_glutin = "0.*"
+image = "0.*"
+cgmath = "0.*"
+byteorder = "1.*"
+
+

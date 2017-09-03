@@ -26,7 +26,7 @@ gfx_defines! {
     }
 
     constant Variants {
-        variant:        [i32; 2] = "u_variant",
+        variant:        [i32; 4] = "u_variant",
         block_size:     [f32; 2] = "u_BlockSize",
         tex_block_size: [f32; 2] = "u_TexBlockSize",
         discard:         u32     = "u_discard",
@@ -66,7 +66,7 @@ const PIXEL_SHADER: &[u8] = b"
 in vec2 v_TexPos;
 
 uniform VariantData {
-    ivec2 u_variant;
+    ivec4 u_variant;
     vec2  u_BlockSize;
     vec2  u_TexBlockSize;
     uint  u_discard;
@@ -245,7 +245,7 @@ pub fn render(tilemap_file: &str, tex_file: &str) -> Result<(), Box<Error>> {
         transform: TRANSFORM
     });
     encoder.update_constant_buffer(&data.variants, &Variants {
-        variant: [0, tile_data.len() as i32],
+        variant: [0, tile_data.len() as i32, 0, 0],
         block_size: sprites.block_size(),
         tex_block_size: sprites.texture_block_size(),
         discard: discard as u32
@@ -311,7 +311,7 @@ pub fn render(tilemap_file: &str, tex_file: &str) -> Result<(), Box<Error>> {
             data.tile_map.0 = tile_map;
 
             encoder.update_constant_buffer(&data.variants, &Variants {
-                variant: [0, tile_data.len() as i32],
+                variant: [0, tile_data.len() as i32, 0, 0],
                 block_size: sprites.block_size(),
                 tex_block_size: sprites.texture_block_size(),
                 discard: discard as u32

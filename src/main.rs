@@ -26,9 +26,9 @@ gfx_defines! {
     }
 
     constant Variants {
-        variant:        [i32; 4] = "u_variant",
-        block_size:     [f32; 4] = "u_BlockSize",
-        tex_block_size: [f32; 4] = "u_TexBlockSize",
+        variant:        [i32; 2] = "u_variant",
+        block_size:     [f32; 2] = "u_BlockSize",
+        tex_block_size: [f32; 2] = "u_TexBlockSize",
         discard:         u32     = "u_discard",
     }
 
@@ -48,7 +48,7 @@ const VERTEX_SHADER: &[u8] = b"
 in vec2 a_Pos;
 in vec2 a_TexPos;
 
-uniform Transform {
+layout(std140) uniform Transform {
     mat4 u_Transform;
 };
 
@@ -65,10 +65,10 @@ const PIXEL_SHADER: &[u8] = b"
 
 in vec2 v_TexPos;
 
-uniform VariantData {
-    ivec4 u_variant;
-    vec4  u_BlockSize;
-    vec4  u_TexBlockSize;
+layout(std140) uniform VariantData {
+    ivec2 u_variant;
+    vec2  u_BlockSize;
+    vec2  u_TexBlockSize;
     uint  u_discard;
 };
 
@@ -105,7 +105,7 @@ vec2 find_block(int start, int count, ivec2 BlockIndex) {
 void main() {
     // get the block index
     vec2 BlockIndexF = vec2(0.0);
-    vec2 BlockPos = modf(v_TexPos / u_BlockSize.xy, BlockIndexF);
+    vec2 BlockPos = modf(v_TexPos / u_BlockSize, BlockIndexF);
 
     // deal with negative numbers.
     if (sign(BlockPos.x) < 0) {
@@ -131,7 +131,7 @@ void main() {
         return;
     }
 
-    vec2 texPos = BlockTexPos + BlockPos * u_TexBlockSize.xy;
+    vec2 texPos = BlockTexPos + BlockPos * u_TexBlockSize;
     vec4 color = texture(t_Texture, texPos);
 
     Target0 = pow(color, vec4(1.4));
@@ -244,12 +244,10 @@ pub fn render(tilemap_file: &str, tex_file: &str) -> Result<(), Box<Error>> {
     encoder.update_constant_buffer(&data.transform, &Transform {
         transform: TRANSFORM
     });
-    let block_size = sprites.block_size();
-    let tex_block_size = sprites.texture_block_size();
     encoder.update_constant_buffer(&data.variants, &Variants {
-        variant: [0, tile_data.len() as i32, 0, 0],
-        block_size: [block_size[0], block_size[1], 0.0, 0.0],
-        tex_block_size: [tex_block_size[0], tex_block_size[1], 0.0, 0.0],
+        variant: [0, tile_data.len() as i32],
+        block_size: sprites.block_size(),
+        tex_block_size: sprites.texture_block_size(),
         discard: discard as u32
     });
     encoder.flush(&mut device);
@@ -313,9 +311,9 @@ pub fn render(tilemap_file: &str, tex_file: &str) -> Result<(), Box<Error>> {
             data.tile_map.0 = tile_map;
 
             encoder.update_constant_buffer(&data.variants, &Variants {
-                variant: [0, tile_data.len() as i32, 0, 0],
-                block_size: [block_size[0], block_size[1], 0.0, 0.0],
-                tex_block_size: [tex_block_size[0], tex_block_size[1], 0.0, 0.0],
+                variant: [0, tile_data.len() as i32],
+                block_size: sprites.block_size(),
+                tex_block_size: sprites.texture_block_size(),
                 discard: discard as u32
             });
         }
